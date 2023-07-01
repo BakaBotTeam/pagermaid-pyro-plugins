@@ -1,0 +1,14 @@
+{
+  "list": [
+    {
+      "name": "sticker_refactor",
+      "version": "1.0",
+      "section": "chat",
+      "maintainer": "Guimc",
+      "size": "8.44kb",
+      "supported": true,
+      "des_short": "Sticker Plugin",
+      "des": "Sticker Plugin, but REFACTOR VERSION!!!"
+    }
+  ]
+}
