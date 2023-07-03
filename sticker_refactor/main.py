@@ -1,5 +1,6 @@
 # This plugin is a plugin of Pagermaid-Pyro.
-# Copyright 2023 Guimc(xiluo@guimc.ltd), a member of BakaBotTeam, All rights reserved.
+# This file is a part of repo BakaBotTeam/pagermaid-pyro-plugins
+# Copyright 2023 Guimc(xiluo@guimc.ltd), the owner of BakaBotTeam, All rights reserved.
 import os.path
 import random
 import tempfile
@@ -18,6 +19,10 @@ from pagermaid.listener import listener
 from pagermaid.single_utils import sqlite, Message
 from pagermaid.utils import alias_command
 from pyromod.utils.conversation import Conversation
+
+
+SUPPORTED_IMAGE_FILE = (".png", ".jpg", ".jpeg", ".bmp", ".cur", ".dcx", ".fli",
+                        ".flc", ".fpx", ".gbr", ".gd", ".ico", ".im", ".imt", ".psd")
 
 
 class GeneralError(Exception):
@@ -197,6 +202,28 @@ async def get_sticker_set() -> str:
     return sticker_pack_name
 
 
+async def download_document(msg: Message):
+    try:
+        filename = get_tempfile()
+        await bot.download_media(msg, filename)
+        return filename
+    except Exception as e:
+        raise GeneralError("下载文件失败.") from e
+
+
+async def file2sticker(filename):
+    # Convert Image file
+    converted_filename = convert_image(filename)
+    # print(filename, converted_filename)
+    msgs = await push_file(converted_filename)
+
+    # Cleanup
+    await add_to_stickers(msgs)
+    await msgs.delete()
+    os.remove(converted_filename)
+    os.remove(filename)
+
+
 @listener(
     command="sr",
     parameters="[贴纸包名/cancel]",
@@ -210,16 +237,13 @@ async def sticker_refactor(msg: Message):
             if msg.reply_to_message.sticker:
                 await add_to_stickers(msg.reply_to_message)
             elif msg.reply_to_message.photo:
-                filename = await download_photo(msg.reply_to_message)
-                converted_filename = convert_image(filename)
-                # print(filename, converted_filename)
-                msgs = await push_file(converted_filename)
+                await file2sticker(await download_photo(msg.reply_to_message))
+            elif msg.reply_to_message.document:
+                document = msg.reply_to_message.document
+                if not document.file_name.endswith(SUPPORTED_IMAGE_FILE):
+                    raise GeneralError("不支持的文件类型.")
 
-                # Cleanup
-                await add_to_stickers(msgs)
-                await msgs.delete()
-                os.remove(converted_filename)
-                os.remove(filename)
+                await file2sticker(await download_document(msg.reply_to_message))
             else:
                 raise GeneralError("找不到可以转换的贴纸/图片,请检查.")
             await msg.edit("✅ 成功添加到贴纸包 [{0}](https://t.me/addstickers/{0})"
@@ -238,7 +262,7 @@ async def sticker_refactor(msg: Message):
 请直接回复你想要添加的贴纸/图片 来保存到你的贴纸包!
 可使用 <code>,{alias_command('sr')} 贴纸包名</code> 来自定义目标贴纸包 (若留cancel 则重置)
 目前使用的贴纸包为 {await get_sticker_set()}
-Made by Guimc (xiluo@guimc.ltd) with ❤""")
+Made by BakaBotTeam@GitHub with ❤""")
     except PeerIdInvalid:
         await msg.edit("❌ 无法打开与 @Sticker 的对话 请先与其私聊一次")
     except GeneralError as e:
