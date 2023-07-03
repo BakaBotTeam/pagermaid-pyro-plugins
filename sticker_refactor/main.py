@@ -126,7 +126,7 @@ async def add_to_stickers(sticker: Message):
         await conv.mark_as_read()
         if not resp.text.startswith("Thanks!"):
             await easy_ask(["/cancel"], conv)
-            raise RuntimeError(f"无法添加贴纸, @Sticker 回复:\n{resp.text}")
+            raise GeneralError(f"无法添加贴纸, @Sticker 回复:\n{resp.text}")
         await easy_ask([random_emoji(), "/done", "/done"], conv)
 
 
