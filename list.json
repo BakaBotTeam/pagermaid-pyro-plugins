@@ -5,10 +5,20 @@
       "version": "1.02",
       "section": "chat",
       "maintainer": "Guimc",
-      "size": "8.44kb",
+      "size": "9.22kb",
       "supported": true,
       "des_short": "Sticker Plugin",
       "des": "Sticker Plugin, but REFACTOR VERSION!!!"
+    },
+    {
+      "name": "quotly",
+      "version": "1.01",
+      "section": "chat",
+      "maintainer": "Guimc",
+      "size": "1.62kb",
+      "supported": true,
+      "des_short": "Quote Plugin (Origin: yvlu)",
+      "des": "Quote Plugin (Origin: yvlu), but use @QuotLy Bot!!"
     }
   ]
 }
