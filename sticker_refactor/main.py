@@ -126,7 +126,7 @@ async def add_to_stickers(sticker: Message):
         await conv.mark_as_read()
         if not resp.text.startswith("Thanks!"):
             await easy_ask(["/cancel"], conv)
-            raise GeneralError(f"无法添加贴纸, @Sticker 回复:\n{resp.text}")
+            raise GeneralError(f"无法添加贴纸, @Stickers 回复:\n{resp.text}")
         await easy_ask([random_emoji(), "/done", "/done"], conv)
 
 
@@ -264,6 +264,6 @@ async def sticker_refactor(msg: Message):
 目前使用的贴纸包为 {await get_sticker_set()}
 Made by BakaBotTeam@GitHub with ❤""")
     except PeerIdInvalid:
-        await msg.edit("❌ 无法打开与 @Sticker 的对话 请先与其私聊一次")
+        await msg.edit("❌ 无法打开与 @Stickers 的对话 请先与其私聊一次")
     except GeneralError as e:
         await msg.edit(f"❌ 在处理时发生了错误: {e}")
