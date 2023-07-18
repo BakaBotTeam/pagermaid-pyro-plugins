@@ -160,12 +160,12 @@ def convert_image(imgfile: str) -> str:
             else:
                 scaling = 512 / height
 
-            img = img.resize((int(width * scaling), int(height * scaling)), Image.ANTIALIAS)
+            img = img.resize((int(width * scaling), int(height * scaling)))
         img.save(imgfile + "_patched.png")
 
         return imgfile + "_patched.png"
     except Exception as e:
-        raise GeneralError("在转换图片时出现了错误.") from e
+        raise GeneralError(f"在转换图片时出现了错误 {e}") from e
 
 
 async def push_file(imgfile: str) -> Message:
