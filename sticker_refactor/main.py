@@ -25,6 +25,7 @@ import emoji
 
 SUPPORTED_IMAGE_FILE = (".png", ".jpg", ".jpeg", ".bmp", ".cur", ".dcx", ".fli",
                         ".flc", ".fpx", ".gbr", ".gd", ".ico", ".im", ".imt", ".psd")
+IMAGE_IMPROVE = Image.LANCZOS
 
 
 class GeneralError(Exception):
@@ -46,7 +47,9 @@ def set_emoji(e: str) -> None:
 
 
 def is_emoji(content: str) -> bool:
-    if content and (u"\U0001F600" <= content <= u"\U0001F64F" or u"\U0001F300" <= content <= u"\U0001F5FF" or u"\U0001F680" <= content <= u"\U0001F6FF" or u"\U0001F1E0" <= content <= u"\U0001F1FF" or content in ["⭐️", "❌"]):
+    if content and (u"\U0001F600" <= content <= u"\U0001F64F" or u"\U0001F300" <= content <= u"\U0001F5FF" or
+                    u"\U0001F680" <= content <= u"\U0001F6FF" or u"\U0001F1E0" <= content <= u"\U0001F1FF" or
+                    emoji.is_emoji(content) or content in ["⭐️", "❌"]):
         return True
     else:
         return False
@@ -160,7 +163,7 @@ def convert_image(imgfile: str) -> str:
             else:
                 scaling = 512 / height
 
-            img = img.resize((int(width * scaling), int(height * scaling)))
+            img = img.resize((int(width * scaling), int(height * scaling)), IMAGE_IMPROVE)
         img.save(imgfile + "_patched.png")
 
         return imgfile + "_patched.png"
