@@ -2,7 +2,6 @@
 # This file is a part of repo BakaBotTeam/pagermaid-pyro-plugins
 # Copyright 2023 Guimc(xiluo@guimc.ltd), the owner of BakaBotTeam, All rights reserved.
 import os.path
-import random
 import tempfile
 import traceback
 import typing
@@ -17,9 +16,12 @@ from pyrogram.raw.types import InputStickerSetShortName, InputStickerSetItem, In
 from pagermaid import bot
 from pagermaid.listener import listener
 from pagermaid.single_utils import sqlite, Message
-from pagermaid.utils import alias_command
+from pagermaid.utils import alias_command, pip_install
 from pyromod.utils.conversation import Conversation
 
+pip_install("emoji")
+
+import emoji
 
 SUPPORTED_IMAGE_FILE = (".png", ".jpg", ".jpeg", ".bmp", ".cur", ".dcx", ".fli",
                         ".flc", ".fpx", ".gbr", ".gd", ".ico", ".im", ".imt", ".psd")
@@ -35,8 +37,19 @@ def get_tempfile() -> str:
         return f.name
 
 
-def random_emoji() -> str:
-    return "⭐️"
+def get_emoji() -> str:
+    return sqlite.get("ltd.guimc.sticker_refactor.custom_emoji", "⭐️")
+
+
+def set_emoji(e: str) -> None:
+    sqlite["ltd.guimc.sticker_refactor.custom_emoji"] = e
+
+
+def is_emoji(content: str) -> bool:
+    if content and (u"\U0001F600" <= content <= u"\U0001F64F" or u"\U0001F300" <= content <= u"\U0001F5FF" or u"\U0001F680" <= content <= u"\U0001F6FF" or u"\U0001F1E0" <= content <= u"\U0001F1FF" or content in ["⭐️", "❌"]):
+        return True
+    else:
+        return False
 
 
 async def create_sticker_set(name):
@@ -60,7 +73,7 @@ async def create_sticker_set(name):
                             access_hash=file.access_hash,
                             file_reference=file.file_reference
                         ),
-                        emoji=random_emoji()
+                        emoji=get_emoji()
                     )
                 ],
                 animated=False,
@@ -70,7 +83,7 @@ async def create_sticker_set(name):
         await msgs.delete()
 
     except Exception as e:
-        raise GeneralError("创建贴纸包失败.") from e
+        raise GeneralError(f"创建贴纸包失败: {e}") from e
 
 
 async def check_pack(name: str):
@@ -108,7 +121,7 @@ async def easy_ask(msg: typing.List, conv: Conversation):
         await conv.mark_as_read()
 
 
-async def add_to_stickers(sticker: Message):
+async def add_to_stickers(sticker: Message, e: str):
     await get_sticker_set()  # To avoid some exception
     async with bot.conversation(429000) as conv:
         await easy_ask(["/start", "/cancel", "/addsticker"], conv)
@@ -124,7 +137,7 @@ async def add_to_stickers(sticker: Message):
         if not resp.text.startswith("Thanks!"):
             await easy_ask(["/cancel"], conv)
             raise GeneralError(f"无法添加贴纸, @Stickers 回复:\n{resp.text}")
-        await easy_ask([random_emoji(), "/done", "/done"], conv)
+        await easy_ask([e, "/done", "/done"], conv)
 
 
 async def download_photo(msg: Message) -> str:
@@ -208,14 +221,14 @@ async def download_document(msg: Message):
         raise GeneralError("下载文件失败.") from e
 
 
-async def file2sticker(filename):
+async def file2sticker(filename, e: str):
     # Convert Image file
     converted_filename = convert_image(filename)
     # print(filename, converted_filename)
     msgs = await push_file(converted_filename)
 
     # Cleanup
-    await add_to_stickers(msgs)
+    await add_to_stickers(msgs, e)
     await msgs.delete()
     os.remove(converted_filename)
     os.remove(filename)
@@ -230,37 +243,52 @@ async def file2sticker(filename):
 async def sticker_refactor(msg: Message):
     try:
         if msg.reply_to_message:
+            _emoji = get_emoji()
+
+            if msg.reply_to_message.sticker:
+                _emoji = msg.reply_to_message.sticker.emoji
+
+            if len(msg.parameter) == 1 and is_emoji(msg.arguments):
+                _emoji = msg.arguments
+
             # check target type
             if msg.reply_to_message.sticker:
-                await add_to_stickers(msg.reply_to_message)
+                await add_to_stickers(msg.reply_to_message, _emoji)
             elif msg.reply_to_message.photo:
-                await file2sticker(await download_photo(msg.reply_to_message))
+                await file2sticker(await download_photo(msg.reply_to_message), _emoji)
             elif msg.reply_to_message.document:
                 document = msg.reply_to_message.document
                 if not document.file_name.endswith(SUPPORTED_IMAGE_FILE):
                     raise GeneralError("不支持的文件类型.")
 
-                await file2sticker(await download_document(msg.reply_to_message))
+                await file2sticker(await download_document(msg.reply_to_message), _emoji)
             else:
                 raise GeneralError("找不到可以转换的贴纸/图片,请检查.")
             await msg.edit("✅ 成功添加到贴纸包 [{0}](https://t.me/addstickers/{0})"
                            .format(await get_sticker_set()))
         else:
             if len(msg.parameter) == 1:
-                # Sticker Pack name
-                if msg.arguments == "cancel":
-                    del_custom_sticker()
-                    await msg.edit("✅ 成功清除")
+                if is_emoji(msg.arguments):
+                    set_emoji(msg.arguments)
+                    await msg.edit("✅ 成功设置Emoji")
+                elif len(msg.arguments) >= 5:
+                    # Sticker Pack name
+                    if msg.arguments == "cancel":
+                        del_custom_sticker()
+                        await msg.edit("✅ 成功清除贴纸包")
+                    else:
+                        set_custom_sticker(msg.arguments)
+                        await msg.edit("✅ 成功设置贴纸包")
                 else:
-                    set_custom_sticker(msg.arguments)
-                    await msg.edit("✅ 成功设置")
+                    await msg.edit("❌ 贴纸包名称长度不能小于5！")
             else:
                 await msg.edit(f"""👋 Hi! 感谢使用 Sticker (重构版) 插件!
 请直接回复你想要添加的贴纸/图片 来保存到你的贴纸包!
 可使用 <code>,{alias_command('sr')} 贴纸包名</code> 来自定义目标贴纸包 (若留cancel 则重置)
-目前使用的贴纸包为 {await get_sticker_set()}
+可使用 <code>,{alias_command('sr')} emoji</code> 来自定义默认emoji
+目前使用的贴纸包为 {await get_sticker_set()}, 目前的默认 Emoji 为 {get_emoji()}
 Made by BakaBotTeam@GitHub with ❤""")
     except PeerIdInvalid:
-        await msg.edit("❌ 无法打开与 @Stickers 的对话 请先与其私聊一次")
+        await msg.edit("❌ 无法打开与 @Stickers 的对话 试试先与其私聊一次?")
     except GeneralError as e:
         await msg.edit(f"❌ 在处理时发生了错误: {e}")

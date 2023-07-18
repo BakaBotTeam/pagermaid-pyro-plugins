@@ -1,3 +1,6 @@
+# This plugin is a plugin of Pagermaid-Pyro.
+# This file is a part of repo BakaBotTeam/pagermaid-pyro-plugins
+# Copyright 2023 Guimc(xiluo@guimc.ltd), the owner of BakaBotTeam, All rights reserved.
 import contextlib
 from asyncio import sleep
 
