@@ -19,6 +19,16 @@
       "supported": true,
       "des_short": "Quote Plugin (Origin: yvlu)",
       "des": "Quote Plugin (Origin: yvlu), but use @QuotLy Bot!!"
+    },
+    {
+      "name": "clash_test",
+      "version": "1.01",
+      "section": "chat",
+      "maintainer": "Guimc",
+      "size": "1.62kb",
+      "supported": true,
+      "des_short": "Test URL Ping by using Clash RESTFul API",
+      "des": "Test URL Ping by using Clash RESTFul API"
     }
   ]
 }
