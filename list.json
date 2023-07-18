@@ -2,7 +2,7 @@
   "list": [
     {
       "name": "sticker_refactor",
-      "version": "1.02",
+      "version": "1.03",
       "section": "chat",
       "maintainer": "Guimc",
       "size": "9.22kb",
@@ -19,16 +19,6 @@
       "supported": true,
       "des_short": "Quote Plugin (Origin: yvlu)",
       "des": "Quote Plugin (Origin: yvlu), but use @QuotLy Bot!!"
-    },
-    {
-      "name": "quotly_refactor",
-      "version": "1.01",
-      "section": "chat",
-      "maintainer": "Guimc, TeamPGM",
-      "size": "1.62kb",
-      "supported": true,
-      "des_short": "Quote Plugin Refactor (Origin: yvlu)",
-      "des": "Quote Plugin Refactor (Origin: yvlu), but no depends on any bot"
     }
   ]
 }
