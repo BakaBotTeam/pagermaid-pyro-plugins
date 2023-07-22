@@ -29,6 +29,16 @@
       "supported": true,
       "des_short": "Test URL Ping by using Clash RESTFul API",
       "des": "Test URL Ping by using Clash RESTFul API"
+    },
+    {
+      "name": "speedtest_cn",
+      "version": "1.01",
+      "section": "chat",
+      "maintainer": "Telegram: @Azuer_ap",
+      "size": "1.62kb",
+      "supported": true,
+      "des_short": "Speedtest 中文版 作者: Telegram: @Azuer_ap",
+      "des": "Speedtest 中文版 作者: Telegram: @Azuer_ap"
     }
   ]
 }
