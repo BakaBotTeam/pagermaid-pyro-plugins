@@ -33,8 +33,8 @@ class GeneralError(Exception):
         super().__init__(msg)
 
 
-def get_tempfile() -> str:
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as f:
+def get_tempfile(suffix: str = ".png") -> str:
+    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as f:
         return f.name
 
 
@@ -152,18 +152,27 @@ async def download_photo(msg: Message) -> str:
         raise GeneralError("下载媒体失败.") from e
 
 
+async def download_sticker(msg: Message) -> str:
+    try:
+        filename = get_tempfile(".webp")
+        await bot.download_media(msg, filename)
+        return filename
+    except Exception as e:
+        raise GeneralError("下载媒体失败.") from e
+
+
 def convert_image(imgfile: str) -> str:
     try:
         img = Image.open(imgfile)
         width, height = img.size
 
         if (width >= 512 or height >= 512) or (width <= 512 and height <= 512):
-            if width >= height:
-                scaling = 512 / width
-            else:
-                scaling = 512 / height
+            scaling = height / width
 
-            img = img.resize((int(width * scaling), int(height * scaling)), IMAGE_IMPROVE)
+            if scaling <= 1:
+                img = img.resize((512, int(512 * scaling)), IMAGE_IMPROVE)
+            else:
+                img = img.resize((int(512 / scaling), 512), IMAGE_IMPROVE)
         img.save(imgfile + "_patched.png")
 
         return imgfile + "_patched.png"
@@ -248,7 +257,7 @@ async def sticker_refactor(msg: Message):
         if msg.reply_to_message:
             _emoji = get_emoji()
 
-            if msg.reply_to_message.sticker:
+            if msg.reply_to_message.sticker and msg.reply_to_message.sticker.emoji is not None:
                 _emoji = msg.reply_to_message.sticker.emoji
 
             if len(msg.parameter) == 1 and is_emoji(msg.arguments):
@@ -256,7 +265,7 @@ async def sticker_refactor(msg: Message):
 
             # check target type
             if msg.reply_to_message.sticker:
-                await add_to_stickers(msg.reply_to_message, _emoji)
+                await file2sticker(await download_sticker(msg.reply_to_message), _emoji)
             elif msg.reply_to_message.photo:
                 await file2sticker(await download_photo(msg.reply_to_message), _emoji)
             elif msg.reply_to_message.document:
