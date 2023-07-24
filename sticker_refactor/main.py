@@ -3,10 +3,11 @@
 # Copyright 2023 Guimc(xiluo@guimc.ltd), the owner of BakaBotTeam, All rights reserved.
 import os.path
 import tempfile
+import time
 import traceback
 import typing
 
-from PIL import Image
+from PIL import Image, features
 from pyrogram.errors import PeerIdInvalid, RPCError
 from pyrogram.file_id import FileId
 from pyrogram.raw.functions.messages import GetStickerSet
@@ -24,7 +25,7 @@ pip_install("emoji")
 import emoji
 
 SUPPORTED_IMAGE_FILE = (".png", ".jpg", ".jpeg", ".bmp", ".cur", ".dcx", ".fli",
-                        ".flc", ".fpx", ".gbr", ".gd", ".ico", ".im", ".imt", ".psd")
+                        ".flc", ".fpx", ".gbr", ".gd", ".ico", ".im", ".imt", ".psd", ".webp")
 IMAGE_IMPROVE = Image.LANCZOS
 
 
@@ -120,8 +121,9 @@ async def generate_sticker_set(time: int = 1) -> str:
 
 async def easy_ask(msg: typing.List, conv: Conversation):
     for i in msg:
-        await conv.ask(i)
-        await conv.mark_as_read()
+        await conv.send_message(i)  # what will happen if i just send message?
+        # await conv.mark_as_read()
+    time.sleep(0.5)  # just avoid some exception
 
 
 async def add_to_stickers(sticker: Message, e: str):
@@ -133,14 +135,15 @@ async def add_to_stickers(sticker: Message, e: str):
         resp: Message = await conv.ask(await get_sticker_set())
         if resp.text == "Invalid set selected.":
             raise GeneralError("无法指定贴纸包,请检查.")
-        await conv.mark_as_read()
+        # await conv.mark_as_read()
         await sticker.forward(429000)
         resp: Message = await conv.get_response()
-        await conv.mark_as_read()
+        # await conv.mark_as_read()
         if not resp.text.startswith("Thanks!"):
             await easy_ask(["/cancel"], conv)
             raise GeneralError(f"无法添加贴纸, @Stickers 回复:\n{resp.text}")
         await easy_ask([e, "/done", "/done"], conv)
+        await conv.mark_as_read()
 
 
 async def download_photo(msg: Message) -> str:
@@ -166,7 +169,7 @@ def convert_image(imgfile: str) -> str:
         img = Image.open(imgfile)
         width, height = img.size
 
-        if (width >= 512 or height >= 512) or (width <= 512 and height <= 512):
+        if max(img.width, img.height) != 512:
             scaling = height / width
 
             if scaling <= 1:
@@ -176,6 +179,16 @@ def convert_image(imgfile: str) -> str:
         img.save(imgfile + "_patched.png")
 
         return imgfile + "_patched.png"
+    except KeyError as e:
+        if not features.check_module('webp'):
+            raise GeneralError(f"转换图片失败: {e}\n我们发现您的PIL库缺少WebP支持 您可以参考[此处](https://stackoverflow.com/questions/19860639/convert-images-to-webp-using-pillow)来解决你的问题") from e
+        else:
+            raise GeneralError(f"转换图片失败: {e}") from e
+    except OSError as e:
+        if not features.check_module('webp'):
+            raise GeneralError(f"转换图片失败: {e}\n我们发现您的PIL库缺少WebP支持 您可以参考[此处](https://stackoverflow.com/questions/19860639/convert-images-to-webp-using-pillow)来解决你的问题") from e
+        else:
+            raise GeneralError(f"转换图片失败: {e}") from e
     except Exception as e:
         raise GeneralError(f"在转换图片时出现了错误 {e}") from e
 
@@ -265,7 +278,10 @@ async def sticker_refactor(msg: Message):
 
             # check target type
             if msg.reply_to_message.sticker:
-                await file2sticker(await download_sticker(msg.reply_to_message), _emoji)
+                if max(msg.reply_to_message.sticker.width, msg.reply_to_message.sticker.height) != 512:
+                    await file2sticker(await download_sticker(msg.reply_to_message), _emoji)
+                else:
+                    await add_to_stickers(msg.reply_to_message, _emoji)
             elif msg.reply_to_message.photo:
                 await file2sticker(await download_photo(msg.reply_to_message), _emoji)
             elif msg.reply_to_message.document:
