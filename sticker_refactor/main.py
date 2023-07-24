@@ -123,7 +123,9 @@ async def easy_ask(msg: typing.List, conv: Conversation):
     for i in msg:
         await conv.send_message(i)  # what will happen if i just send message?
         # await conv.mark_as_read()
-    time.sleep(0.5)  # just avoid some exception
+    # just avoid some exception
+    time.sleep(.5)
+    await conv.mark_as_read()
 
 
 async def add_to_stickers(sticker: Message, e: str):
@@ -143,7 +145,6 @@ async def add_to_stickers(sticker: Message, e: str):
             await easy_ask(["/cancel"], conv)
             raise GeneralError(f"无法添加贴纸, @Stickers 回复:\n{resp.text}")
         await easy_ask([e, "/done", "/done"], conv)
-        await conv.mark_as_read()
 
 
 async def download_photo(msg: Message) -> str:
