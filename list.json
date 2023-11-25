@@ -1,6 +1,16 @@
 {
   "list": [
     {
+        "name": "google-fix",
+        "version": "1.04",
+        "section": "chat",
+        "maintainer": "xtaodada, guimc233",
+        "size": "1.241 kb",
+        "supported": true,
+        "des_short": "google 谷歌搜索",
+        "des": "google 谷歌搜索"
+    },
+    {
       "name": "sticker_refactor",
       "version": "1.14514",
       "section": "chat",
