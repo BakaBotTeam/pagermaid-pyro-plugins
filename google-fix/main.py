@@ -3,7 +3,10 @@ from pagermaid.listener import listener
 from pagermaid.enums import Message
 from pagermaid.utils import lang, pip_install
 
-pip_install("git+https://github.com/guimc233/magic_google", alias="magic_google")
+try:
+    pip_install("git+https://github.com/guimc233/magic_google", alias="magic_google")
+except:
+    pass
 
 from magic_google import MagicGoogle
 
