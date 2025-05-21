@@ -12,13 +12,13 @@
     },
     {
       "name": "quotly",
-      "version": "1.02",
+      "version": "1.03",
       "section": "chat",
       "maintainer": "Guimc",
       "size": "1.62kb",
       "supported": true,
       "des_short": "Quote Plugin (Origin: yvlu)",
-      "des": "Quote Plugin (Origin: yvlu), but use @QuotLy Bot!!"
+      "des": "Quote Plugin (Origin: yvlu), but use @krau_quotly_bot Bot!!"
     },
     {
       "name": "speedtest_cn",
