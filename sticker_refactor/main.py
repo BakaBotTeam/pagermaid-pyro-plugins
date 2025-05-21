@@ -1,6 +1,6 @@
 # This plugin is a plugin of Pagermaid-Pyro.
 # This file is a part of repo BakaBotTeam/pagermaid-pyro-plugins
-# Copyright 2023 Guimc(xiluo@guimc.ltd), the owner of BakaBotTeam, All rights reserved.
+# Copyright 2023-2025 Guimc(xiluo@guimc.ltd), the owner of BakaBotTeam, All rights reserved.
 import os.path
 import tempfile
 import time
@@ -14,9 +14,9 @@ from pyrogram.raw.functions.messages import GetStickerSet
 from pyrogram.raw.functions.stickers import CreateStickerSet
 from pyrogram.raw.types import InputStickerSetShortName, InputStickerSetItem, InputDocument
 
-from pagermaid import bot
+from pagermaid.services import bot, sqlite
 from pagermaid.listener import listener
-from pagermaid.single_utils import sqlite, Message
+from pagermaid.enums import Message
 from pagermaid.utils import alias_command, pip_install
 from pyromod.utils.conversation import Conversation
 
@@ -80,8 +80,6 @@ async def create_sticker_set(name):
                         emoji=get_emoji()
                     )
                 ],
-                animated=False,
-                videos=False,
             )
         )
         await msgs.delete()
