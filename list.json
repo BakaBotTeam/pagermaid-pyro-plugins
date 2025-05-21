@@ -30,5 +30,25 @@
       "des_short": "Speedtest 中文版 作者: Telegram: @Azuer_ap",
       "des": "Speedtest 中文版 作者: Telegram: @Azuer_ap"
     }
+    {
+      "name": "xmsl",
+      "version": "1.01",
+      "section": "chat",
+      "maintainer": "Guimc",
+      "size": "844b",
+      "supported": true,
+      "des_short": "一键 羡慕死了！",
+      "des": "一键 羡慕死了！指令: ,xm"
+    }
+    {
+      "name": "auto_del_cmd_execute",
+      "version": "1.01",
+      "section": "chat",
+      "maintainer": "Guimc",
+      "size": "333b",
+      "supported": true,
+      "des_short": "自动删除你的指令执行 (所有以/开头的消息)",
+      "des": "自动删除你的指令执行 (所有以/开头的消息), 无配置, 开盖即食"
+    }
   ]
 }
