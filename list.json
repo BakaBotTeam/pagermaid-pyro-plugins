@@ -49,6 +49,16 @@
       "supported": true,
       "des_short": "自动删除你的指令执行 (所有以/开头的消息)",
       "des": "自动删除你的指令执行 (所有以/开头的消息), 无配置, 开盖即食"
-    }
+    },
+    {
+      "name": "quotly-beta",
+      "version": "1.01",
+      "section": "chat",
+      "maintainer": "Guimc",
+      "size": "1.62kb",
+      "supported": true,
+      "des_short": "Quote Plugin (Origin: yvlu)",
+      "des": "Quote Plugin (Origin: yvlu), but use API!!"
+    },
   ]
 }
