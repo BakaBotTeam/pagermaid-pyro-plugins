@@ -28,8 +28,10 @@ from pagermaid.listener import listener
 from pagermaid.enums import Client, Message
 
 pip_install("emoji")
+pip_install("opencv-python", alias="cv2")
 
 import emoji
+import cv2
 
 
 BASE_API_URL = "https://quotly.sbcnm.tech/generate"
@@ -378,10 +380,29 @@ async def get_quotly_image_file(bot: Client, message: Message):
                 entities_data.append(entity_data)
             message_data["entities"] = entities_data
         if msg.sticker:
-            img_bytesio = await bot.download_media(msg.sticker, in_memory=True)
-            img = Image.open(img_bytesio)
-            rfile_name = str(time.time()) + ".png"
-            img.save(rfile_name)
+            rfile_name = await bot.download_media(msg.sticker)
+            if rfile_name.endswith(".tgs"):
+                await message.edit("咱不支持 tgs 格式的贴纸…")
+                raise Exception()
+            if rfile_name.endswith(".webm"):
+                orig_file = rfile_name
+                cap = cv2.VideoCapture(orig_file)
+                
+                if not cap.isOpened():
+                    await message.edit("好奇怪的 webm 贴纸… 咱打不开.")
+                    raise Exception()
+                
+                ret, frame = cap.read()
+                
+                if ret:
+                    rfile_name = str(time.time()) + ".png"
+                    cv2.imwrite(rfile_name, frame)
+                else:
+                    await message.edit("好奇怪的 webm 贴纸… 咱没法从里面提取帧")
+                    raise Exception()
+                
+                cap.release()
+                os.remove(orig_file)
             fed_message = await bot.send_document("baka_quotly_helper_bot", rfile_name)
             os.remove(rfile_name)
             message_data["media"] = [{
@@ -391,10 +412,7 @@ async def get_quotly_image_file(bot: Client, message: Message):
             }]
             message_data["mediaType"] = "sticker"
         if msg.photo:
-            img_bytesio = await bot.download_media(msg.photo, in_memory=True)
-            img = Image.open(img_bytesio)
-            rfile_name = str(time.time()) + ".png"
-            img.save(rfile_name)
+            rfile_name = await bot.download_media(msg.sticker)
             fed_message = await bot.send_document("baka_quotly_helper_bot", rfile_name)
             os.remove(rfile_name)
             message_data["media"] = [{
@@ -425,6 +443,7 @@ async def get_quotly_image_file(bot: Client, message: Message):
             except:
                 pass
         last_userid = messages[i]["from"]["id"]
+    no_edit_flag = False
     try:
         bodys = json.dumps({
             "messages": messages,
@@ -442,12 +461,15 @@ async def get_quotly_image_file(bot: Client, message: Message):
             data = response.json()
             if data.get("error"):
                 await message.edit(f"生成失败了... 错误信息: {data['error']}")
+                no_edit_flag = True
                 raise Exception()
             if not data["result"].get("image"):
                 await message.edit("生成失败了... 服务器没有返回图片, 可能是因为消息太长了?")
+                no_edit_flag = True
                 raise Exception()
             if response.status_code != 200:
                 await message.edit("呜呜, 生成失败了... 等下再试试吧? 服务器返回的状态看起来不是很正常...")
+                no_edit_flag = True
                 raise Exception()
             image_data = data["result"]["image"]
             image_bytes = base64.b64decode(image_data)
@@ -468,7 +490,8 @@ async def get_quotly_image_file(bot: Client, message: Message):
             print(response.text)
             raise
     except:
-        await message.edit("出了一些小问题... 看看控制台的报错吧 (=・ω・=)")
+        if not no_edit_flag:
+            await message.edit("出了一些小问题... 看看控制台的报错吧 (=・ω・=)")
         raise
 
 
