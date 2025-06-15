@@ -412,7 +412,7 @@ async def get_quotly_image_file(bot: Client, message: Message):
             }]
             message_data["mediaType"] = "sticker"
         if msg.photo:
-            rfile_name = await bot.download_media(msg.sticker)
+            rfile_name = await bot.download_media(msg.photo)
             fed_message = await bot.send_document("baka_quotly_helper_bot", rfile_name)
             os.remove(rfile_name)
             message_data["media"] = [{
